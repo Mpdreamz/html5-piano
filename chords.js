@@ -1,4 +1,5 @@
 var Chords = [
+	["Single Note", [1]],
 	["Major", [1,5,8]],
 	["Minor", [1,4,8]],
 	["5", [1,8]],
