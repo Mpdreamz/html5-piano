@@ -25,7 +25,7 @@ var Piano = (function()
 	});
 	$.each(this.chordsArray, function (i,v)
 	{
-		$chordsInplay.append("<audio src=\"resources/"  +  escape(v) + ".mp3\" preload='auto'></audio>");
+		$chordsInplay.append("<audio src=\"resources/"  +  escape(v) + ".ogg\" preload='auto'></audio>");
 	});
 	//Public methods
 	this.drawPiano = function (selectedKeys) 
@@ -180,7 +180,7 @@ var Piano = (function()
 		
 		for (var i = 0; i < selectedKeys.length; i++)
 		{
-				var a = $chordsInplay.append("<audio src='resources/"+ escape(this.chordsArray[selectedKeys[i] - 1]) +".mp3' autoplay='true'></audio>");
+				var a = $chordsInplay.append("<audio src='resources/"+ escape(this.chordsArray[selectedKeys[i] - 1]) +".ogg' autoplay='true'></audio>");
 				a.find("audio:last").bind("ended", function (e) 
 				{ 
 					$(this).remove(); 
