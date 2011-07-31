@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>HTML5 Piano</title>
+		<link rel="stylesheet" type="text/css" media="screen" href="piano.css">
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<link href='http://fonts.googleapis.com/css?family=Ubuntu:400,700' rel='stylesheet' type='text/css'>
+	</head>
+	<body>
+		<div id="header">
+			<img src="resources/HTML5_Badge_64.png" />
+			<h1><span>Canvas Piano</span></h1>
+			<select id="chordSelector"></select>
+		</div>
+		<div id="midsection">
+			
+			<canvas id="c" width="844" height="180"></canvas>
+		</div>
+		<div id="content">
+			<h2>What the heck is it?</h2>
+			<p>
+				HTML5 Canvas Piano, is a "fully" functional piano created entirely in the browser using  &lt;canvas /&gt;
+				and &lt;audio/&gt; It can play and visualize single notes but you can also choose to play chords by selecting one
+				from the dropdown at the top right of this page. These chords will then be played by composing them from single 
+				notes.
+			</p>
+			<p>
+				You can only control the first 2 octaves, the other two are purely visual.
+			</p>
+			<h2>Is it reliable?</h2>
+			<p>
+				<strong>NO</strong>, especially in this first version some notes might be dropped from chords when you attempt
+				to play them.
+			</p>
+			<h2>Why was it then developped?</h2>
+			<p>
+				Mostly as a fun weekend project, to get more familiar with HTML5 goodness. 
+				This is actually a port of <a href="http://www.mirc.net/projects.php?go=1140115468">Rhodes Piano for mIRC</a>
+				which I made 5 years ago in reaction to negative sounds in the mIRC scripting scene saying "everything has been done already" .  The &lt;canvas /&gt; works in a very similar way as <a href="http://www.zigwap.com/mirc/pic_window.php">picture windows</a> do in mIRC Script thus the idea of porting was born.
+			</p>
+			<h2>Roadblock</h2>
+			<ul>
+				<li>Investigate why notes are sometimes lost</li>
+			</ul>
+			<p>
+				If you have cool idea's please mention them on the github issues page.
+			</p>
+			<h2>Author</h2>
+			<p>
+				Made by Martijn Laarman (<a href="http://www.twitter.com/mpdreamz">@Mpdreamz</a>)
+			</p>
+			<h2>License information</h2>
+			<p>
+				Code and images (Html5 logo excluded) are MIT licensed.
+			</p>
+			<p>
+				Samples taken from <a href="http://www.freesound.org/packsViewSingle.php?id=3957">freesound.org</a> courtesy of <a href="http://timtapesstuff.wordpress.com/">Tim Tapes</a> and are licensed under:
+				<a rel="license" href="http://creativecommons.org/licenses/sampling+/1.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/sampling+/1.0/80x15.png" /></a>
+			<p>
+			<div id="chordsInplay">
+			
+			</div>
+		</div>
+		<script type="text/javascript" src="chords.js"></script>
+		<script type="text/javascript" src="piano.js"></script>
+	</body> 
+</head>	
+ 

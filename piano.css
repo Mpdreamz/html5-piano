@@ -1,0 +1,65 @@
+#header, 
+#midsection,
+#content,
+canvas
+{
+	width:844px;
+	margin:auto;
+}
+*
+{
+		font-family: 'Ubuntu', serif;
+}
+h1
+{
+	font-size:64px;
+	color:black;
+	display:inline-block;
+	margin-top:1px;
+	margin-bottom:1px;
+}
+h1 span
+{
+	display:inline-block;
+	padding-top:-10px;
+}
+#header 
+{
+	margin-top:40px;
+	margin-bottom:30px;
+}
+#header img {
+	margin-top:10px;
+	float:left;
+}
+canvas
+{
+	display:block;
+	background: transparent;   
+}
+
+{
+
+
+}
+
+#content
+{
+
+}
+select 
+{
+	float:right;
+	margin:auto;
+	display:block;
+	margin-top:30px;
+}
+
+body {
+	background: url('resources/background-site.jpg') top center repeat-x;
+	margin:0px;
+	padding:0px;
+}
+canvas {
+	 
+}
