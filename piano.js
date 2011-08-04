@@ -25,7 +25,11 @@ var Piano = (function()
 	});
 	$.each(this.chordsArray, function (i,v)
 	{
-		$chordsInplay.append("<audio src=\"resources/"  +  escape(v) + ".ogg\" preload='auto'></audio>");
+		$("<audio src=\"resources/"  +  escape(v) + ".ogg\" preload='auto'></audio>").bind('loadeddata', 
+			function(e) { 
+				$(this).remove(); 
+			}).appendTo($chordsInplay)
+			
 	});
 	//Public methods
 	this.drawPiano = function (selectedKeys) 
@@ -177,15 +181,27 @@ var Piano = (function()
 		selectedKeys = selectedKeys || [];
 		if (selectedKeys.length == 0)
 			return;
+		var chordElements = "";
+		
+		$.each($chordsInplay.find("audio"), function(e) 
+		{ 
+			this.src = "";
+			this.pause(); 
+			$(this).remove(); 
+		});
 		
 		for (var i = 0; i < selectedKeys.length; i++)
 		{
-				var a = $chordsInplay.append("<audio src='resources/"+ escape(this.chordsArray[selectedKeys[i] - 1]) +".ogg' autoplay='true'></audio>");
-				a.find("audio:last").bind("ended", function (e) 
-				{ 
-					$(this).remove(); 
-				});
+				var note = escape(this.chordsArray[selectedKeys[i] - 1]);
+				chordElements += "<audio src='resources/"+ note  +".ogg'></audio>";
 		}	
+		$(chordElements)
+			.bind('ended', function(e) { 
+				$(this).remove(); 
+			})
+			.bind('canplaythrough', function(e) { 
+				this.play();
+			}).appendTo($chordsInplay);
 	}
 	
 	
