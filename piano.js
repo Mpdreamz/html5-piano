@@ -55,24 +55,36 @@ var Piano = (function()
 		for (var i = 0; i < 32;i++)
 		{
 			var keyX = (i * 25) + offset;
-			context.fillStyle = (i == Sequencer.getCurrentTimeBlock()) ? "red" : "white";
+			
+			context.fillStyle = (getSequencerPositionBlock(currentX, currentY) == i) 
+				? "#CEF" : "white";
+			if (i == Sequencer.getCurrentTimeBlock())
+				context.fillStyle = "orange";
+
 			context.strokeStyle = "grey";
 			context.strokeRect(keyX ,yOffset + 160,25,10);
 			context.fillRect(keyX ,yOffset + 160,25,10);
+		}
+		for (var s = 0; s < Sequencer.getTotalSequencers(); s++)
+		{
+			for (var i = 0; i < 32;i++)
+			{
+				var keyX = (i * 25) + offset;
 			
 
-			var selected = Sequencer.isSequencerBlockSelected(0, i);
-			var color = selected ? "green" : "white";
-
-			
-			if (isInRect(currentX, currentY, keyX, 175, 24, 20))
-				color = "#CEF";
-			if ((seqData[0] == 0 && seqData[1] == i))
-				color = "red";
-			context.fillStyle = color;
-			context.strokeStyle = "black";
-			context.fillRect(keyX ,yOffset + 175,25,20);
-			context.strokeRect(keyX ,yOffset + 175,25,20);
+				var selected = Sequencer.isSequencerBlockSelected(s, i);
+				var color = selected ? Sequencer.getSequencerColor(s) : "white";
+				
+				
+				if (isInRect(currentX, currentY, keyX, 175 + (s * 20), 24, 20))
+					color = "#CEF";
+				if ((seqData[0] == s && seqData[1] == i))
+					color = "red";
+				context.fillStyle = color;
+				context.strokeStyle = "black";
+				context.fillRect(keyX ,yOffset + 175 + (s * 20),25,20);
+				context.strokeRect(keyX ,yOffset + 175 + (s * 20),25,20);
+			}
 		}
 	};
 	var keyLooper = function(selectedKeys, sequencedKeys,
@@ -162,7 +174,14 @@ var Piano = (function()
 	{
 		var xo = (844) - ((25 * 32 )+ xOffset);
 		var w = (25 * 32)+ xOffset;
-		return isInRect(x,y,xo,yOffset + 175,w,20);
+		var sequencers = Sequencer.getTotalSequencers();
+		return isInRect(x,y,xo,yOffset + 175,w,20 * (sequencers));
+	};
+	var isInSequencerPostionBar = function(x,y)
+	{
+		var xo = (844) - ((25 * 32 )+ xOffset);
+		var w = (25 * 32)+ xOffset;
+		return isInRect(x,y,xo,yOffset + 160,w,10);
 	};
 	var getSequencerAndBlock = function(x,y)
 	{
@@ -173,6 +192,16 @@ var Piano = (function()
 		var seq = Math.floor((y - (yOffset + 175)) / 20);
 		var block = Math.floor((x - xo) / 25);
 		return [seq, block];
+
+	};
+	var getSequencerPositionBlock = function(x,y)
+	{
+		if (!isInSequencerPostionBar(x,y))		
+			return;
+		var xo = (844) - ((25 * 32 )+ xOffset);
+
+		var block = Math.floor((x - xo) / 25);
+		return block;
 
 	};
 	var findIvoryKey = function (x, y)
@@ -261,7 +290,8 @@ var Piano = (function()
 		currentY = 0;
 	
 		if (isInPiano(x,y)
-			|| isInASequencer(x,y))
+			|| isInASequencer(x,y)
+			|| isInSequencerPostionBar(x, y))
 		currentX = x;
 		currentY = y;
 		
@@ -311,7 +341,13 @@ var Piano = (function()
 			key = actuallyOnEbonyKey(key, x, y); 
 			var keys = getChordKeysForRootKey(key);
 			if (Sequencer.isInEditMode())
+			{
 				Sequencer.fillBlockMarkedForEditing(key, getSelectedChordIndex());
+				var hash = Sequencer.getHash();
+				window.location.hash = hash;
+				if (history.state.hash != hash)
+					history.pushState({hash: hash}, window.title, window.location);
+			}
 			this.playNotes(keys);
 		}
 		if (isInASequencer(x,y))
@@ -327,6 +363,12 @@ var Piano = (function()
 			}
 			else
 				Sequencer.markBlockForEditing(seq, block);
+			
+		}
+		if (isInSequencerPostionBar(x,y))
+		{
+			var block = getSequencerPositionBlock(x,y);
+			Sequencer.setCurrentTimeBlock(block);
 		}
 
 	};
@@ -353,7 +395,7 @@ var Piano = (function()
 	$("body").live("nextstep", $.proxy(onSequencerNextStep, this));
 	$("body").live("stepplay", $.proxy(onSequencerStepPlay, this));
 	$("#speedSelector").change($.proxy(onChangeSpeed, this));
-
+	$(window).bind("popstate", Sequencer.initializeState);
 	//KICK OFF 
 	this.drawPiano();
 })();

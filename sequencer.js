@@ -4,11 +4,28 @@ var Sequencer = new (function()
 	var timer = null;
 
 	//array of sequencers holding 32 [key, chord] arrays.
-	var sequencers = [
-		[[1, 3],[],[],[4, 2],[7, 7],[],[],[2, 6]]
-	];
+	var sequencers = [];
 	var blockMarkedForEditing = [-1, -1];
 
+	var sequenceColors = ["green", "purple"];
+
+
+	this.getHash = function()
+	{
+		var harr = [];
+		for (var s = 0;s < sequencers.length;s++)
+		{
+			harr.push([]);
+			for (var i = 0;i < sequencers[s].length;i++)
+			{
+				var c = sequencers[s][i]
+				if (c.length == 2)
+					harr[s].push([i, c[0], c[1]])
+			}
+		}
+
+		return btoa(JSON.stringify(harr));
+	}
 
 	this.isInEditMode = function()
 	{
@@ -48,6 +65,12 @@ var Sequencer = new (function()
 	{
 		return currentTimeBlock;
 	}
+	this.setCurrentTimeBlock = function(block)
+	{
+		if (block > 32)
+			return;
+		currentTimeBlock = block;
+	}
 	
 	this.isSequencerBlockSelected = function(sequencerIndex, blockIndex)
 	{
@@ -55,26 +78,45 @@ var Sequencer = new (function()
 		var selected = (seq && $.isArray(seq[blockIndex]) && seq[blockIndex].length == 2);
 		return selected;
 	};
-
-
-	this.setTotalSequencers = function (numberOfWantedSequencers)
+	this.getSequencerColor = function(index)
 	{
+		return sequenceColors[index];
+	}
+	this.getTotalSequencers = function ()
+	{
+		return sequenceColors.length;
+	}
+	this.initializeState = function()
+	{
+		sequencers = [];
+		fillSequencerSlots();	
+	};
+	var fillSequencerSlots = function ()
+	{
+		var harr = [];
+		if (window.location.hash.length > 0)
+			harr = JSON.parse(atob(window.location.hash.substr(1)));
 		if (sequencers == null)
 			sequencers = [];
-		for (var i = 0; i < numberOfWantedSequencers;i++)
+		for (var i = 0; i < sequenceColors.length;i++)
 		{
-			var seq = sequencers[i];
-			if (!seq)
-				seq = [];
+			var seq = [];
 			for (var p = 0; p < 32;p++)
 			{
-				if (!seq[p])
-					seq[p] = [];
+				seq[p] = [];
 			}
-			
+			sequencers.push(seq);		
 		}
-
-
+		for (var i = 0; i < harr.length;i++)
+		{
+			var seq = harr[i];
+			for (var k = 0; k < seq.length;k++)
+			{
+				var info = seq[k];
+				if (info.length == 3)
+					sequencers[i][info[0]] = [info[1], info[2]];
+			}
+		}
 	}
 
 	this.setSequencerSpeed = function (speed)
@@ -94,7 +136,7 @@ var Sequencer = new (function()
 			{
 				var key = stepchord[0];
 				var chord = stepchord[1];
-				chordColorArray.push(["green", key, chord])
+				chordColorArray.push([Sequencer.getSequencerColor(s), key, chord])
 			}
 		}
 		return chordColorArray;
@@ -119,7 +161,7 @@ var Sequencer = new (function()
 	};
 
 
-	this.setTotalSequencers(1);
+	fillSequencerSlots();
 	this.setSequencerSpeed(600);
 
 });
