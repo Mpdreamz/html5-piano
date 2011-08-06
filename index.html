@@ -10,11 +10,24 @@
 		<div id="header">
 			<img src="resources/HTML5_Badge_64.png" />
 			<h1><span>Canvas Piano</span></h1>
-			<select id="chordSelector"></select>
 		</div>
 		<div id="midsection">
-			
-			<canvas id="c" width="844" height="180"></canvas>
+		Chord: <select id="chordSelector"></select>	
+		Loop: <select id="barSelector">
+			<option>All</option>
+			<option value="1">Bar 1 + 2</option>
+			<option value="2">Bar 3 + 4</option>
+			<option value="3">Bar 5 + 6</option>
+			<option value="4">Bar 7 + 8</option>
+		</select>
+		Speed: <select id="speedSelector">
+			<option value="600">Normal</option>
+			<option value="1000">Slow</option>
+			<option value="400">Fast</option>
+			<option value="200">Very Fast</option>
+		</select>		
+		
+		<canvas id="c" width="844" height="230"></canvas>
 		</div>
 		<div id="content">
 			<h2>What the heck is it?</h2>
@@ -27,20 +40,22 @@
 			<p>
 				You can only control the first 2 octaves, the other two are purely visual.
 			</p>
+			<p>
+				The moving red block, is a position indicator for the blocks underneath. The blocks underneath will in the future be able to hold chords.
+				So you can play back chord progressions.
+			</p>
+			
 			<h2>Is it reliable?</h2>
 			<p>
-				<strong>NO</strong>, especially in this first version some notes might be dropped from chords when you attempt
-				to play them.
+				<strong>NO</strong>, Firefox seems to perform best. Chrome seems ok.
 			</p>
 			<h2>Why was it then developped?</h2>
 			<p>
 				Mostly as a fun weekend project, to get more familiar with HTML5 goodness. 
-				This is actually a port of <a href="http://www.mirc.net/projects.php?go=1140115468">Rhodes Piano for mIRC</a>
-				which I made 5 years ago in reaction to negative sounds in the mIRC scripting scene saying "everything has been done already" .  The &lt;canvas /&gt; works in a very similar way as <a href="http://www.zigwap.com/mirc/pic_window.php">picture windows</a> do in mIRC Script thus the idea of porting was born.
 			</p>
 			<h2>Roadblock</h2>
 			<ul>
-				<li>Investigate why notes are sometimes lost.</li>
+				<li>Finish time blocks so you can save chord progression and play them back.</li>
 			</ul>
 			<p>
 				If you have cool idea's please mention them on the github issues page.
@@ -61,8 +76,12 @@
 			
 			</div>
 		</div>
+		
 		<script type="text/javascript" src="chords.js"></script>
+		<script type="text/javascript" src="sequencer.js"></script>
 		<script type="text/javascript" src="piano.js"></script>
+
+		
 	</body> 
 </head>	
  

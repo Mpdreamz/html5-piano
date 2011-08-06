@@ -8,14 +8,13 @@ var Piano = (function()
 	var gaps = [3,7,10,14]
 		, jumpTable = [2,3,5,6,7,9,10,12,13,14]
 		, ebonies = [2,4,7,9,11,14,16,19,21,23];
-	var xOffset = 1, yOffset = 1;
+	var xOffset = 1, yOffset = 1, currentX = 0, currentY = 0;
 
 	var chords = "C C# D D# E F F# G G# A A# B C' C#' D' D#' E' F' F#' G' G#' A' A#' B' C'' C#'' D'' D#'' E'' F'' F#'' G'' G#'' A'' A#'' B'' C''' C#''' D''' D#''' E''' F''' F#''' G''' G#''' A''' A#''' B'''";
 
 	this.chordsArray = chords.split(" ");
-
+	
 	//Constructorish
-
 	context.strokeStyle = "black";
 	context.fillStyle = "white";
 	
@@ -23,41 +22,77 @@ var Piano = (function()
 	{
 		$chordSelector.append("<option value='"  + v[0] + "'>"  + v[0] + "</option>");
 	});
-	$.each(this.chordsArray, function (i,v)
-	{
-		$("<audio src=\"resources/"  +  escape(v) + ".ogg\" preload='auto'></audio>").bind('loadeddata', 
-			function(e) { 
-				$(this).remove(); 
-			}).appendTo($chordsInplay)
-			
-	});
+	
+
+	
+	
 	//Public methods
 	this.drawPiano = function (selectedKeys) 
 	{
 		var selectedKeys = selectedKeys || [];
 		var key = 1, skipped = 0;
+		
+		var sequencedKeys = [];
+		var sequencedChords = Sequencer.getCurrentSequencedChords();
+		for (var i = 0;i < sequencedChords.length;i++) 
+		{
+			var s = sequencedChords[i];
+			sequencedKeys.push([s[0], getChordKeysForRootKeyByIndex(s[1], s[2])]);
+		}
 
-		keyLooper(selectedKeys, drawIvoryKey, null);
-		keyLooper(selectedKeys, null, drawEbonyKey);
+		keyLooper(selectedKeys, sequencedKeys, drawIvoryKey, null);
+		keyLooper(selectedKeys, sequencedKeys, null, drawEbonyKey);
+		
+		drawTimeBlocks();
 	};
 
 
 	//Private methods
+    var drawTimeBlocks = function ()
+	{
+		var offset = (844) - ((25 * 32 )+ xOffset)
+		var seqData = Sequencer.getBlockMarkedForEditing();
+		for (var i = 0; i < 32;i++)
+		{
+			var keyX = (i * 25) + offset;
+			context.fillStyle = (i == Sequencer.getCurrentTimeBlock()) ? "red" : "white";
+			context.strokeStyle = "grey";
+			context.strokeRect(keyX ,yOffset + 160,25,10);
+			context.fillRect(keyX ,yOffset + 160,25,10);
+			
 
-	var keyLooper = function(selectedKeys, beforeSkipHandler, afterSkipHandle)
+			var selected = Sequencer.isSequencerBlockSelected(0, i);
+			var color = selected ? "green" : "white";
+
+			
+			if (isInRect(currentX, currentY, keyX, 175, 24, 20))
+				color = "#CEF";
+			if ((seqData[0] == 0 && seqData[1] == i))
+				color = "red";
+			context.fillStyle = color;
+			context.strokeStyle = "black";
+			context.fillRect(keyX ,yOffset + 175,25,20);
+			context.strokeRect(keyX ,yOffset + 175,25,20);
+		}
+	};
+	var keyLooper = function(selectedKeys, sequencedKeys,
+		 beforeSkipHandler, afterSkipHandle)
 	{
 		var key = 0, skipped = 0;
 		while (key < 28) 
 		{
 			if (beforeSkipHandler != null)  //assume function
-				beforeSkipHandler.call(this, selectedKeys, key, skipped);
+				beforeSkipHandler.call(this, selectedKeys, sequencedKeys, key, skipped);
 			if (gaps.indexOf((key % 14) + 1) < 0)
 			{
 				skipped++;
 				if (afterSkipHandle!= null)  //assume function
-					afterSkipHandle.call(this, selectedKeys, key, skipped);
+					afterSkipHandle.call(this, selectedKeys, sequencedKeys, key, skipped);
 			}
 			key++;
+			
+			
+			
 		}
 	};
     
@@ -66,14 +101,15 @@ var Piano = (function()
 		return key >= 14 ? "grey" : "black";
 	}
 	
-	var drawEbonyKey = function(selectedKeys, key, skipped)
+	var drawEbonyKey = function(selectedKeys, sequencedKeys, key, skipped)
 	{
 		var keyX = (key * 30) + xOffset;
 		var letterx = (key * 30) + 21; 
 		var drawingKey = (key + 1) + skipped;
 
 		
-		context.fillStyle = (selectedKeys.indexOf(drawingKey) > -1) ? "#CEF" : getDefaultColorForKey(key);
+		context.fillStyle = getFillStyle(selectedKeys, sequencedKeys, 
+			drawingKey, getDefaultColorForKey(key));
 		context.fillRect(keyX + 20 ,yOffset,20, 75);
 
 		context.strokeRect(keyX + 20 ,yOffset,20,75);
@@ -82,13 +118,13 @@ var Piano = (function()
 		context.fillStyle = getDefaultColorForKey(key)
 	};
 
-	var drawIvoryKey = function(selectedKeys, key, skipped)
+	var drawIvoryKey = function(selectedKeys, sequencedKeys, key, skipped)
 	{
 		var keyX = (key * 30) + xOffset;
 		var letterx = (key * 30) + 11 + xOffset;
 		var drawingKey = (key + 1) + skipped;
 
-		context.fillStyle = (selectedKeys.indexOf(drawingKey) > -1) ? "#CEF" : "white";
+		context.fillStyle = getFillStyle(selectedKeys, sequencedKeys, drawingKey, "white");
 		context.fillRect(keyX ,yOffset,30,150);
     
 		context.strokeRect(keyX ,yOffset,30,150);
@@ -98,6 +134,22 @@ var Piano = (function()
 	}
 
 
+	var getFillStyle = function (selectedKeys, sequencedKeys, drawingKey, defaultFillColor)
+	{
+		var color = defaultFillColor;
+		for (var i =0; i < sequencedKeys.length;i++)
+		{
+			var c = sequencedKeys[i];
+			if (c[1].indexOf(drawingKey) > -1)
+				color = c[0];
+		}
+		if (selectedKeys.indexOf(drawingKey) > -1)
+			color = "#CEF";
+		if (Sequencer.isInEditMode() && selectedKeys.indexOf(drawingKey) > -1)
+			color = "red";
+		return color;
+	}
+
 	var isInRect = function (x,y,rx,ry,rw,rh)
 	{
 		return (x >= rx && x <= rx+rw) && (y >= ry && y <= ry+rh);
@@ -106,7 +158,23 @@ var Piano = (function()
 	{
 		return isInRect(x,y,xOffset,yOffset,420,150);
 	};
+	var isInASequencer = function(x,y)
+	{
+		var xo = (844) - ((25 * 32 )+ xOffset);
+		var w = (25 * 32)+ xOffset;
+		return isInRect(x,y,xo,yOffset + 175,w,20);
+	};
+	var getSequencerAndBlock = function(x,y)
+	{
+		if (!isInASequencer(x,y))		
+			return;
+		var xo = (844) - ((25 * 32 )+ xOffset);
 
+		var seq = Math.floor((y - (yOffset + 175)) / 20);
+		var block = Math.floor((x - xo) / 25);
+		return [seq, block];
+
+	};
 	var findIvoryKey = function (x, y)
 	{
 	   var key = Math.ceil((x - xOffset) / 30)
@@ -139,38 +207,66 @@ var Piano = (function()
 		return ebonies.indexOf(k) < 0 ? key : k;
 	}
 	
-	var getChordKeysForRootKey = function(key)
+	var getChordKeysForRootKeyByIndex = function(key, chord)
+	{
+		var keys = [];
+		for (var c = 0; c < Chords[chord][1].length; c++)
+		{
+			keys.push(Chords[chord][1][c] + (key - 1));
+		}
+		return keys;
+	};
+
+	var getSelectedChordIndex = function()
 	{
 		var selectedChord = $("#chordSelector option:selected").val();
-		var keys = [key];
 		for (var i = 0; i < Chords.length; i++)
 		{
 			if (Chords[i][0] == selectedChord)
 			{
-				keys = [];
-				for (var c = 0; c < Chords[i][1].length; c++)
-				{
-					keys.push(Chords[i][1][c] + (key - 1));
-				}
-				break;
+				return i;
 			}
 		}
-			
-		return keys;
+		return -1;
+		
+	}
+
+	var getChordKeysForRootKey = function(key)
+	{
+		var selectedChord = getSelectedChordIndex();
+		var keys = [key];
+		if (selectedChord < 0)
+			return keys;
+
+		return getChordKeysForRootKeyByIndex(key, selectedChord);
 	}
 	
+	var getKeysForMousePosition = function(x, y)
+	{
+		if (!isInPiano(x,y))
+			return;
+		var key = findIvoryKey(x, y);
+		key = actuallyOnEbonyKey(key, x, y); 
+		
+		var keys = getChordKeysForRootKey(key);
+		
+		return keys;
+	};
 	
 	var mouseMoveHandler = function(e)
 	{      
 		var x = Math.floor((e.pageX-$("#c").offset().left));
 		var y = Math.floor((e.pageY-$("#c").offset().top));
-		if (!isInPiano(x,y))
-			return;
-
-		var key = findIvoryKey(x, y);
-		key = actuallyOnEbonyKey(key, x, y); 
+		currentX = 0;
+		currentY = 0;
+	
+		if (isInPiano(x,y)
+			|| isInASequencer(x,y))
+		currentX = x;
+		currentY = y;
 		
-		var keys = getChordKeysForRootKey(key);
+		
+		var keys = (isInPiano(x,y)) ? getKeysForMousePosition(x, y) : [];
 		
 		this.drawPiano(keys);
 
@@ -182,24 +278,24 @@ var Piano = (function()
 		if (selectedKeys.length == 0)
 			return;
 		var chordElements = "";
-		
+		/*
 		$.each($chordsInplay.find("audio"), function(e) 
 		{ 
 			this.src = "";
-			this.pause(); 
+			//this.pause(); 
 			$(this).remove(); 
 		});
-		
+		*/
 		for (var i = 0; i < selectedKeys.length; i++)
 		{
-				var note = escape(this.chordsArray[selectedKeys[i] - 1]);
-				chordElements += "<audio src='resources/"+ note  +".ogg'></audio>";
+			var note = this.chordsArray[selectedKeys[i] - 1];
+			chordElements += "<audio src='"+  Base64EncodedNotes[note] +"'></audio>";
 		}	
 		$(chordElements)
 			.bind('ended', function(e) { 
 				$(this).remove(); 
 			})
-			.bind('canplaythrough', function(e) { 
+			.bind('canplay', function(e) { 
 				this.play();
 			}).appendTo($chordsInplay);
 	}
@@ -209,21 +305,54 @@ var Piano = (function()
 	{      
 		var x = Math.floor((e.pageX-$("#c").offset().left));
 		var y = Math.floor((e.pageY-$("#c").offset().top));
-		if (!isInPiano(x,y))
-			return;
+		if (isInPiano(x,y))
+		{
+			var key = findIvoryKey(x, y);
+			key = actuallyOnEbonyKey(key, x, y); 
+			var keys = getChordKeysForRootKey(key);
+			if (Sequencer.isInEditMode())
+				Sequencer.fillBlockMarkedForEditing(key, getSelectedChordIndex());
+			this.playNotes(keys);
+		}
+		if (isInASequencer(x,y))
+		{
+			var currentEditingBlock = Sequencer.getBlockMarkedForEditing();
+			var seqData = getSequencerAndBlock(x, y);
+				
+			var seq = seqData[0];
+			var block = seqData[1];
+			if (seq == currentEditingBlock[0] && block == currentEditingBlock[1])
+			{
+				Sequencer.emptyBlockMarkedForEditing();
+			}
+			else
+				Sequencer.markBlockForEditing(seq, block);
+		}
 
-		var key = findIvoryKey(x, y);
-		key = actuallyOnEbonyKey(key, x, y); 
-		var keys = getChordKeysForRootKey(key);
-		this.playNotes(keys);
-
+	};
+	
+	var onSequencerNextStep = function(e)
+	{
+		var keys = getKeysForMousePosition(currentX, currentY);
+		this.drawPiano(keys);
+	};
+	var onSequencerStepPlay = function(e, key, chord)
+	{
+		this.playNotes(getChordKeysForRootKeyByIndex(key, chord));
+	};
+	var onChangeSpeed = function (e)
+	{
+		var speed = $("#speedSelector option:selected").val();
+		Sequencer.setSequencerSpeed(speed);
 	};
 
 	//REGISTER EVENTS
 
 	$("#c").mousemove($.proxy(mouseMoveHandler, this));
 	$("#c").click($.proxy(mouseClickHandler, this));
-
+	$("body").live("nextstep", $.proxy(onSequencerNextStep, this));
+	$("body").live("stepplay", $.proxy(onSequencerStepPlay, this));
+	$("#speedSelector").change($.proxy(onChangeSpeed, this));
 
 	//KICK OFF 
 	this.drawPiano();
