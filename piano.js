@@ -26,8 +26,10 @@ var Piano = (function()
 
 	var drawWaitingMessage = function()
 	{
-		context.fillStyle = (selectedKeys.indexOf(drawingKey) > -1) ? "black" : "white";
-		context.fillText("Loading data...", keyX + 22, yOffset + 40);
+		context.fillStyle = "black";
+		context.font = "24px sans-serif";
+		context.fillText("Loading data...", 320, 120);
+		context.font = "10px sans-serif";
 	}
 	
 	//Public methods
@@ -405,7 +407,6 @@ var Piano = (function()
 	$(window).bind("popstate", Sequencer.initializeState);
 	//KICK OFF 
 	drawWaitingMessage();
-	$(function () { this.drawPiano()});
 })();
 
 

@@ -38,9 +38,12 @@ canvas
 	display:block;
 	background: transparent;   
 }
-
+.gitforked-button-container
 {
-
+	float:right;
+	margin-right:38px; //bubble appended.
+	margin-top:20px;
+	display:inline-block;
 
 }
 
