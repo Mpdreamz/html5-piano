@@ -24,7 +24,11 @@ var Piano = (function()
 	});
 	
 
-	
+	var drawWaitingMessage = function()
+	{
+		context.fillStyle = (selectedKeys.indexOf(drawingKey) > -1) ? "black" : "white";
+		context.fillText("Loading data...", keyX + 22, yOffset + 40);
+	}
 	
 	//Public methods
 	this.drawPiano = function (selectedKeys) 
@@ -345,8 +349,11 @@ var Piano = (function()
 				Sequencer.fillBlockMarkedForEditing(key, getSelectedChordIndex());
 				var hash = Sequencer.getHash();
 				window.location.hash = hash;
-				if (history.state.hash != hash)
+				if (history.state == null || history.state.hash != hash)
 					history.pushState({hash: hash}, window.title, window.location);
+				var tweetUrl = "http://twitter.com/share?text=Check out what I made with HTML 5 piano";
+				tweetUrl += "&url=" + window.location;
+				$(".twitter-share-button").attr("src", tweetUrl);
 			}
 			this.playNotes(keys);
 		}
@@ -397,7 +404,8 @@ var Piano = (function()
 	$("#speedSelector").change($.proxy(onChangeSpeed, this));
 	$(window).bind("popstate", Sequencer.initializeState);
 	//KICK OFF 
-	this.drawPiano();
+	drawWaitingMessage();
+	$(function () { this.drawPiano()});
 })();
 
 
